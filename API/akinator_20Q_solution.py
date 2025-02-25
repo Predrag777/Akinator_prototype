@@ -50,8 +50,8 @@ questions = load_questions("Data/questions_dataset.txt")
 def retrive_question(question):
     while True:
         try:
-            val = float(input(question.text + " (1: Da, -1: Ne, 0.2: Možda, -0.2: Možda ne, 0: Ne znam) "))
-            if val in [1, -1, 0.2, -0.2, 0]:  
+            val = float(input(question.text + " (1: Yes, -1: No, 0.2: Maybe, -0.2: Maybe no, 0: Dont know) "))
+            if val in [1, -1, 0.2, -0.2, 0]:
                 return val
         except ValueError:
             pass
@@ -103,7 +103,7 @@ def gameplay():
         # Remove asked question
         questions_left.remove(curr_question)
 
-        
+
         best_item = max(items, key=lambda x: x.confidence)
         print("The biggest probability is", best_item.name , "(with confidence: ",best_item.confidence)
 
