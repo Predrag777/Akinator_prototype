@@ -1,5 +1,8 @@
 import numpy as np
 import pandas as pd
+import ast
+import math
+from collections import Counter
 
 
 QUESTION_LEN=26 #We defined 26 questions in the /Data/questions_dataset.txt
@@ -17,10 +20,7 @@ class Question:
     def __init__(self, id, text):
         self.id=id
         self.text=text
-
 ######################################################
-
-
 
 #Functions for data loading
 def load_items(path):
@@ -28,7 +28,7 @@ def load_items(path):
     with open(path) as file:
         for line in file:
             l=line.split(":")
-            items.append(Item(l[0], l[1], l[2]))
+            items.append(Item(l[0], l[1], ast.literal_eval(l[2])))
     return items
 def load_questions(path):
     questions=[]
@@ -36,7 +36,7 @@ def load_questions(path):
     with open(path) as file:
         for line in file:
             questions.append(Question(id, line))
-
+            id+=1
 
     return questions
 ### Load data
@@ -56,14 +56,46 @@ def retrive_question(question):
         except ValueError:
             pass
 
-def evalouate(answer, question):# Make an evaloation for the certain answer on the certain question
-    return (1 - abs(answer - items.arr[question.id - 1])) / QUESTION_LEN
+
+def evaluate(answer, question):  # When player answer the question, program will update confidence of each item
+    for item in items:
+        if question.id - 1 >= len(item.arr):    # Out of bounds
+            return 0
+        return (1 - abs(answer - item.arr[question.id - 1])) / QUESTION_LEN
+
+
+def entropy(answers):
+    counter=Counter(answers)
+    prob=[c/len(answers) for c in counter]
+
+    return -sum(p*math.log2(p) for p in prob if p>0)   # Shannoa entropy https://en.wikipedia.org/wiki/Entropy_(information_theory)
+
+
+# Best question would be retrived based on the entropy level
+def retrive_next_question():
+    best_question = None
+    best_entropy = -1
+
+    for question in questions:
+        answers = [item.arr[question.id - 1] for item in items]
+        e = entropy(answers)
+
+        if e > best_entropy:
+            best_entropy = e
+            best_question = question
+
+    return best_question
+
+
+
+def gameplay():
+    
+    while True:
+
 
 
 curr_question=questions[0]
 answer =1
 
-print(curr_question.id, curr_question.text, answer)
-print(evalouate(answer, curr_question))
 
-
+entropy([1,-1,0,0.5,-0.5])
