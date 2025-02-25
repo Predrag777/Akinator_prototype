@@ -1,11 +1,42 @@
 <html>
 <head>
     <title>Akinator prototype</title>
+    <link rel="stylesheet" href="Frontend/style/main.css">
 </head>
 <body>
-    <h1></h1>
+    <div id="header">
+        <img id="logo" src="Assets/logo.png">
+        <h1 aligne="center">WIZARD PROTOTYPE</h1>
+    </div>
     
+    <div id="main">
+
+    </div>
+
+    <div id="footer">
+        <p>Predrag Brajovic</p>
+        <p>predragbrajoviccw@gmail.com</p>
+    </div>
+
 
 
 </body>
+
+<script>
+
+fetch('http://localhost:5000/')
+    .then(response => response.json())
+    .then(data => { 
+        
+    }
+    )
+    .catch(error => console.error('Error:', error));
+
+    async function getText(file) {
+        let x = await fetch(file);
+        let y = await x.text();
+        myDisplay(y);
+    }
+</script>
+
 </html>

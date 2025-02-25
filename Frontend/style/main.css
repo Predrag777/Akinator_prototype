@@ -1,0 +1,33 @@
+*{
+    margin: 0;
+    padding: 0;
+}
+
+#header{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 20%;
+    background-color: rgb(76, 0, 138);
+    color: white;
+    font-size: 40px;
+    font-weight: 600;
+}
+
+#logo{
+    position: absolute;
+    left: 0;
+}
+
+#main{
+    width: 100%;
+    height: 60%;
+}
+
+#footer{
+    width: 100%;
+    height: 20%;
+    background-color: rgb(226, 43, 243);
+    color: white;
+}
