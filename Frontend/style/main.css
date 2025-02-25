@@ -21,8 +21,46 @@
 }
 
 #main{
+    display: flex;
+    justify-content: center;
+    align-items: center;
     width: 100%;
     height: 60%;
+}
+
+#QA{
+    width: 50%;
+    height: 50%;
+}
+
+#QA{
+    background-color: rgb(116, 116, 116);
+    border-radius: 10px;
+    border: 5 solid black;
+    margin-left: 5%;
+    margin-bottom: 4%;
+}
+
+#questions{
+    width: 80%;
+    height: 40%;
+    
+    color: white;
+    font-size: 40px;
+    font-weight: 700;
+}
+
+#answers{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 30%;
+    width: 80%;
+    margin-top: 50px;
+}
+
+#answers label {
+    margin-left: 25px;
 }
 
 #footer{

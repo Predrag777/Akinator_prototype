@@ -13,6 +13,17 @@
     <div id="main">
 
         <img id="agent" src="Assets/wizard_thinking.gif">
+        <div id="QA">
+            <div id="questions"></div>
+            <div id="answers">
+                <label><input type="radio" name="answer" value="Yes"> Yes</label>
+                <label><input type="radio" name="answer" value="No"> No</label>
+                <label><input type="radio" name="answer" value="Maybe No"> Maybe No</label>
+                <label><input type="radio" name="answer" value="Maybe Yes"> Maybe Yes</label>
+                <label><input type="radio" name="answer" value="Dno't know">Don't Know</label>
+            </div>
+        </div>
+        
 
     </div>
 
@@ -30,7 +41,9 @@
 fetch('http://localhost:5000/')
     .then(response => response.json())
     .then(data => { 
-        
+        var text=document.getElementById("questions")
+        console.log(data+"   "+data.Hello)
+        text.textContent=data.Hello
     }
     )
     .catch(error => console.error('Error:', error));
