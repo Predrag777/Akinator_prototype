@@ -16,11 +16,11 @@
         <div id="QA">
             <div id="questions"></div>
             <div id="answers">
-                <label><input type="radio" name="answer" value="Yes"> Yes</label>
-                <label><input type="radio" name="answer" value="No"> No</label>
-                <label><input type="radio" name="answer" value="Maybe No"> Maybe No</label>
-                <label><input type="radio" name="answer" value="Maybe Yes"> Maybe Yes</label>
-                <label><input type="radio" name="answer" value="Dno't know">Don't Know</label>
+                <label><input id="Yes" type="radio" name="answer" value="1"> Yes</label>
+                <label><input id="No" type="radio" name="answer" value="0"> No</label>
+                <label><input id="MaybeNo" type="radio" name="answer" value="-0.2"> Maybe No</label>
+                <label><input id="MaybeYes" type="radio" name="answer" value="0.2"> Maybe Yes</label>
+                <label><input id="DontKnow" type="radio" name="answer" value="0">Don't Know</label>
             </div>
         </div>
         
@@ -37,22 +37,30 @@
 </body>
 
 <script>
+document.addEventListener("DOMContentLoaded", function () {
+    const radioButtons = document.querySelectorAll('input[name="answer"]');
+    
+    radioButtons.forEach(radio => {
+        radio.addEventListener("change", function () {
+            console.log("Odabrano:", this.value);
+            sendDataToBackend(this.value); 
+        });
+    });
+});
 
-fetch('http://localhost:5000/')
+function sendDataToBackend(selectedValue) {
+    fetch('http://localhost:5000/submit', { 
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ answer: selectedValue }) 
+    })
     .then(response => response.json())
-    .then(data => { 
-        var text=document.getElementById("questions")
-        console.log(data+"   "+data.Hello)
-        text.textContent=data.Hello
-    }
-    )
-    .catch(error => console.error('Error:', error));
+    .then(data => console.log("Server odgovorio:", data))
+    .catch(error => console.error("Greška pri slanju:", error));
+}
 
-    async function getText(file) {
-        let x = await fetch(file);
-        let y = await x.text();
-        myDisplay(y);
-    }
 </script>
 
 </html>

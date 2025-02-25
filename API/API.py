@@ -116,18 +116,32 @@ def gameplay():
 #gameplay()
 
 
-
-
 from typing import Union
 
-from flask import Flask, request
+
+from flask import Flask, request, jsonify
+from flask_cors import CORS  
+
 app = Flask(__name__)
+CORS(app) 
 
 
-@app.get("/")
-def read_root():
-    return {"Hello": "World"}
+@app.route("/submit", methods=["POST"])
+def receive_data():
+    data = request.json
+    answer = data.get("answer")
+    print("Primljen odgovor:", answer)
+
+    return jsonify({"message": "Primljeno", "your_answer": answer}), 200
+
+
+if __name__ == "__main__":
+    app.run(debug=True)
+
 
 @app.route('/game', methods=['POST'])
 def form_example():
-    return {"Result":"SS"}
+    return {"Result" : "SS"}
+
+if __name__ == '__main__':
+    app.run(debug=True, port=5000)
