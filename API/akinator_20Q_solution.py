@@ -4,82 +4,80 @@ import ast
 import math
 from collections import Counter
 
+QUESTION_LEN = 26  # Number of questions
 
-QUESTION_LEN=26 #We defined 26 questions in the /Data/questions_dataset.txt
 
-
-##############CLASSES
+############## CLASSES
 class Item:
     def __init__(self, name, item_type, arr):
-        self.name=name
-        self.arr=arr       # Numerical representation of an item
-        self.item_type=item_type # Which type item belongs
-        self.confidence=0  #Default confidence is 0
+        self.name = name
+        self.arr = arr  # Numerical representation of an item
+        self.item_type = item_type  # Item category
+        self.confidence = 1e-5  # Small initial confidence to avoid division by zero
+
 
 class Question:
     def __init__(self, id, text):
-        self.id=id
-        self.text=text
-######################################################
+        self.id = id
+        self.text = text.strip()
 
-#Functions for data loading
+
+######################################################
+# Functions for data loading
+
 def load_items(path):
-    items=[]
+    items = []
     with open(path) as file:
         for line in file:
-            l=line.split(":")
+            l = line.strip().split(":")
             items.append(Item(l[0], l[1], ast.literal_eval(l[2])))
     return items
+
+
 def load_questions(path):
-    questions=[]
-    id=1
+    questions = []
     with open(path) as file:
-        for line in file:
+        for id, line in enumerate(file, start=1):
             questions.append(Question(id, line))
-            id+=1
-
     return questions
-### Load data
-items=load_items("Data/items_dataset.txt")
-questions=load_questions("Data/questions_dataset.txt")
 
 
+# Load data
+items = load_items("Data/items_dataset.txt")
+questions = load_questions("Data/questions_dataset.txt")
 
 
-#Functions
 def retrive_question(question):
     while True:
         try:
-            val = float(input(question.text + " ")) #Provide an answer
-            if val in [1, -1, 0.2, -0.2, 0]:  #True, false, maybe, maybe not, don't know
+            val = float(input(question.text + " (1: Da, -1: Ne, 0.2: Možda, -0.2: Možda ne, 0: Ne znam) "))
+            if val in [1, -1, 0.2, -0.2, 0]:  
                 return val
         except ValueError:
             pass
 
 
-def evaluate(answer, question):  # When player answer the question, program will update confidence of each item
+def evaluate(answer, question):
     for item in items:
-        if question.id - 1 >= len(item.arr):    # Out of bounds
-            return 0
-        return (1 - abs(answer - item.arr[question.id - 1])) / QUESTION_LEN
+        if question.id - 1 >= len(item.arr):  # Out of bounds check
+            continue
+        similarity = (1 - abs(answer - item.arr[question.id - 1])) / QUESTION_LEN
+        item.confidence += similarity
 
 
 def entropy(answers):
-    counter=Counter(answers)
-    prob=[c/len(answers) for c in counter]
+    counter = Counter(answers)
+    prob = [c / len(answers) for c in counter.values()]
+    return -sum(p * math.log2(p) for p in prob if p > 0)  # Shannon entropy
 
-    return -sum(p*math.log2(p) for p in prob if p>0)   # Shannoa entropy https://en.wikipedia.org/wiki/Entropy_(information_theory)
 
-
-# Best question would be retrived based on the entropy level
-def retrive_next_question():
+def find_the_best_question(questions_left):
     best_question = None
     best_entropy = -1
 
-    for question in questions:
+    for question in questions_left:
         answers = [item.arr[question.id - 1] for item in items]
         e = entropy(answers)
-
         if e > best_entropy:
             best_entropy = e
             best_question = question
@@ -87,15 +85,32 @@ def retrive_next_question():
     return best_question
 
 
-
 def gameplay():
-    
-    while True:
+    questions_left = questions.copy()
+
+    while questions_left:
+        curr_question = find_the_best_question(questions_left)
+        if not curr_question:
+            print("There is no more questions")
+            break
+
+        # Retrieve next question
+        answer = retrive_question(curr_question)
+
+        # Update confidence of each item
+        evaluate(answer, curr_question)
+
+        # Remove asked question
+        questions_left.remove(curr_question)
+
+        
+        best_item = max(items, key=lambda x: x.confidence)
+        print("The biggest probability is", best_item.name , "(with confidence: ",best_item.confidence)
+
+        # If confidence is high enough, end the game
+        if best_item.confidence > 0.9:
+            print("Finished! API's answer is:",{best_item.name})
+            break
 
 
-
-curr_question=questions[0]
-answer =1
-
-
-entropy([1,-1,0,0.5,-0.5])
+gameplay()
