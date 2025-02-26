@@ -37,36 +37,35 @@
 </body>
 
 <script>
-
-
-
-
+getMessage()
 document.addEventListener("DOMContentLoaded", function () {
     const radioButtons = document.querySelectorAll('input[name="answer"]');
     
     radioButtons.forEach(radio => {
         radio.addEventListener("change", function () {
-            var question=document.getElementById('questions').innerHTML
-            console.log("Odabrano:", this.value," Question=> ",question);
-            sendDataToBackend(this.value, question); 
+            var question = document.getElementById('questions').innerHTML;
+            console.log("Odabrano:", this.value, " Question=> ", question);
+
+            sendDataToBackend(this.value, question).then(() => {
+                getMessage();
+            });
         });
     });
 });
 
-
-function getMessage(){
+function getMessage() {
+    console.log("Fecuj");
     fetch("http://localhost:5000/question")
-    .then(response => response.json())
-    .then(data => {
-            console.log(data.Question)
-            document.getElementById("questions").innerHTML=data.Question
-    })
-    .catch(error => console.error("Greška:", error));
-
+        .then(response => response.json())
+        .then(data => {
+            console.log(data.Question);
+            document.getElementById("questions").innerHTML = data.Question;
+        })
+        .catch(error => console.error("Greška:", error));
 }
 
 function sendDataToBackend(selectedValue, question) {
-    fetch('http://localhost:5000/submit', { 
+    return fetch("http://localhost:5000/submit", { 
         method: "POST",
         headers: {
             "Content-Type": "application/json"
@@ -79,7 +78,6 @@ function sendDataToBackend(selectedValue, question) {
     })
     .catch(error => console.error("Greška pri slanju:", error));
 }
-
 
 
 
