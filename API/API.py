@@ -101,7 +101,7 @@ def gameplay():
 
         # Retrieve next question
 
-        answer = retrive_question2(curr_question)
+        answer = retrive_question(curr_question)
 
         # Update confidence of each item
         evaluate(answer, curr_question)
