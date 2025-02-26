@@ -139,7 +139,7 @@ questions_left=questions.copy()
 
 @app.route("/question", methods=["GET"])
 def send_question():
-    ss=find_the_best_question(questions)
+    ss=find_the_best_question(questions_left)
 
     return jsonify({"Question": f"{ss.text}", "Question_id":f"{ss.id}"})
 
@@ -150,11 +150,9 @@ def receive_data():
     data = request.json
     answer = float(data.get("answer"))
     question = data.get("question")
-
     # Build object question
     curr_question = next((q for q in questions_left if q.text == question), None)
 
-    print(curr_question,"    ",type(curr_question),"    ", answer,"    ", type(answer))
     evaluate(float(answer),curr_question)
     questions_left.remove(curr_question)
     best_item = max(items, key=lambda x: x.confidence)
