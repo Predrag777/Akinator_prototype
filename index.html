@@ -37,29 +37,46 @@
 </body>
 
 <script>
+
+
+fetch("http://localhost:5000/question")
+  .then(response => response.json())
+  .then(data => {
+        console.log(data.Question)
+        document.getElementById("questions").innerHTML=data.Question
+  })
+  .catch(error => console.error("Greška:", error));
+
+
 document.addEventListener("DOMContentLoaded", function () {
     const radioButtons = document.querySelectorAll('input[name="answer"]');
     
     radioButtons.forEach(radio => {
         radio.addEventListener("change", function () {
-            console.log("Odabrano:", this.value);
-            sendDataToBackend(this.value); 
+            var question=document.getElementById('questions').innerHTML
+            console.log("Odabrano:", this.value," Question=> ",question);
+            sendDataToBackend(this.value, question); 
         });
     });
 });
 
-function sendDataToBackend(selectedValue) {
+function sendDataToBackend(selectedValue, question) {
     fetch('http://localhost:5000/submit', { 
         method: "POST",
         headers: {
             "Content-Type": "application/json"
         },
-        body: JSON.stringify({ answer: selectedValue }) 
+        body: JSON.stringify({ answer: selectedValue, question: question }) 
     })
     .then(response => response.json())
-    .then(data => console.log("Server odgovorio:", data))
+    .then(data => {
+        console.log("Server odgovorio:", data);
+    })
     .catch(error => console.error("Greška pri slanju:", error));
 }
+
+
+
 
 </script>
 
