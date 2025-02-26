@@ -56,8 +56,13 @@ def retrive_question(question):
         except ValueError:
             pass
 
+def retrive_question2(question):
+    val = float(input(question.text + " (1: Yes, -1: No, 0.2: Maybe, -0.2: Maybe no, 0: Dont know) "))
+    if val in [1, -1, 0.2, -0.2, 0]:
+        return val
 
 def evaluate(answer, question):
+    print(answer,"    ",question)
     for item in items:
         if question.id - 1 >= len(item.arr):  # Out of bounds check
             continue
@@ -95,7 +100,8 @@ def gameplay():
             break
 
         # Retrieve next question
-        answer = retrive_question(curr_question)
+
+        answer = retrive_question2(curr_question)
 
         # Update confidence of each item
         evaluate(answer, curr_question)
@@ -120,28 +126,43 @@ from typing import Union
 
 
 from flask import Flask, request, jsonify
-from flask_cors import CORS  
+from flask_cors import CORS
 
 app = Flask(__name__)
-CORS(app) 
+CORS(app)
 
+questions_left=questions.copy()
+
+
+
+#gameplay()
 
 @app.route("/question", methods=["GET"])
 def send_question():
     ss=find_the_best_question(questions)
 
-    return jsonify({"Question": f"${ss.text}"})
+    return jsonify({"Question": f"{ss.text}", "Question_id":f"{ss.id}"})
 
 
 
 @app.route("/submit", methods=["POST"])
 def receive_data():
     data = request.json
-    answer = data.get("answer")
-    print("Primljen odgovor:", answer)
-    return jsonify({"message": "Primljeno", "your_answer": answer, "next_question": "Kraj pitanja!"}), 200
+    answer = float(data.get("answer"))
+    question = data.get("question")
+
+    # Build object question
+    curr_question = next((q for q in questions_left if q.text == question), None)
+
+    print(curr_question,"    ",type(curr_question),"    ", answer,"    ", type(answer))
+    evaluate(float(answer),curr_question)
+    questions_left.remove(curr_question)
+    best_item = max(items, key=lambda x: x.confidence)
+
+    return jsonify({"message": "Primljeno", "Item": best_item.name, "confidence": best_item.confidence}), 200
 
 
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
+
