@@ -41,6 +41,7 @@
 
 <script>
 getMessage()
+
 document.addEventListener("DOMContentLoaded", function () {
     const radioButtons = document.querySelectorAll('input[name="answer"]');
     
@@ -86,12 +87,20 @@ function sendDataToBackend(selectedValue, question) {
         var confid=parseFloat(data.confidence).toFixed(2)
 
         document.getElementById("AI_answer").innerHTML=`<p> Item: ${item}</p><p>Confidence: ${confid}</p>`
-
+        setTimeout(() => {
+            transform_wizard("Assets/wizard_thinking.gif");
+            
+        }, 900);
+        transform_wizard("Assets/wizard_predict.gif");
     })
     .catch(error => console.error("Error: ", error));
 }
 
 
+function transform_wizard(nextState){
+    var wizard=document.getElementById("agent")
+    wizard.src=nextState
+}
 
 </script>
 
