@@ -126,22 +126,22 @@ app = Flask(__name__)
 CORS(app) 
 
 
+@app.route("/question", methods=["GET"])
+def send_question():
+    ss=find_the_best_question(questions)
+
+    return jsonify({"Question": f"${ss.text}"})
+
+
+
 @app.route("/submit", methods=["POST"])
 def receive_data():
     data = request.json
     answer = data.get("answer")
     print("Primljen odgovor:", answer)
-
-    return jsonify({"message": "Primljeno", "your_answer": answer}), 200
-
-
-if __name__ == "__main__":
-    app.run(debug=True)
+    return jsonify({"message": "Primljeno", "your_answer": answer, "next_question": "Kraj pitanja!"}), 200
 
 
-@app.route('/game', methods=['POST'])
-def form_example():
-    return {"Result" : "SS"}
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
