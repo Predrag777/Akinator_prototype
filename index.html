@@ -11,8 +11,11 @@
     </div>
     
     <div id="main">
-
-        <img id="agent" src="Assets/wizard_thinking.gif">
+        
+        <div id="agent_container">
+            <div id="AI_answer">Thinking...</div>
+            <img id="agent" src="Assets/wizard_thinking.gif">
+        </div>
         <div id="QA">
             <div id="questions"></div>
             <div id="answers">
@@ -44,24 +47,29 @@ document.addEventListener("DOMContentLoaded", function () {
     radioButtons.forEach(radio => {
         radio.addEventListener("change", function () {
             var question = document.getElementById('questions').innerHTML;
-            console.log("Odabrano:", this.value, " Question=> ", question);
 
             sendDataToBackend(this.value, question).then(() => {
                 getMessage();
             });
+
+            var elements = document.getElementsByTagName("input");
+
+            for (var i = 0; i < elements.length; i++) {
+                    if (elements[i].type == "radio") {
+                        elements[i].checked = false;
+                    }
+                }
         });
     });
 });
 
 function getMessage() {
-    console.log("Fecuj");
     fetch("http://localhost:5000/question")
         .then(response => response.json())
         .then(data => {
-            console.log(data.Question);
             document.getElementById("questions").innerHTML = data.Question;
         })
-        .catch(error => console.error("Greška:", error));
+        .catch(error => console.error("Error:", error));
 }
 
 function sendDataToBackend(selectedValue, question) {
@@ -74,9 +82,13 @@ function sendDataToBackend(selectedValue, question) {
     })
     .then(response => response.json())
     .then(data => {
-        console.log("Server odgovorio:", data);
+        var item=data.Item
+        var confid=parseFloat(data.confidence).toFixed(2)
+
+        document.getElementById("AI_answer").innerHTML=`<p> Item: ${item}</p><p>Confidence: ${confid}</p>`
+
     })
-    .catch(error => console.error("Greška pri slanju:", error));
+    .catch(error => console.error("Error: ", error));
 }
 
 

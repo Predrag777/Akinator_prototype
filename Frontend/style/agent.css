@@ -1,4 +1,26 @@
+#agent_container{
+    height: 100%;
+    width: 30%;
+    margin-top: 40px;
+}
+
+
+
+
+
+
 #agent{
-    width: 15%;
+    width: 70%;
     height: 70%;
+    left: 0;
+    bottom: 0;
+}
+
+#AI_answer{
+    padding: 10px;
+    width: 40%;
+    height: 10%;
+    margin-left: 70%;
+    border-radius: 20px;
+    border: 5px solid black;
 }
