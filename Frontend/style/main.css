@@ -62,7 +62,7 @@
     font-size: 40px;
     font-weight: 700;
     margin-left: 40px;
-    margin-top:15%;
+    margin-top:5%;
 }
 
 #answers{
@@ -79,15 +79,14 @@
 
 #footer {
     position: relative;
+    /*width:1834px;*/
     width: 100%;
     height: 10%;
     background-color: rgb(226, 43, 243);
+
+
     color: white;
-    display: flex;
-    flex-direction: column; 
     justify-content: center;
-    align-items: flex-start;
-    padding-left: 20px; 
     font-size: 20px;
     font-weight: 600;
 }
@@ -101,4 +100,5 @@
     height: 60px;
     background-color: rgb(226, 43, 243);
     clip-path: ellipse(50% 100% at 50% 100%);
+    
 }
