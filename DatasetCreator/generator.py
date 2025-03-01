@@ -16,9 +16,30 @@ weight_data=features[:,1]
 diet=  features[:,4]
 predators=features[:, 6]
 colors=features[:, 2]
-top_speed=features[:, 7]
+top_speed=features[:, 12]
 
+def parse_speed(data):
+    print(len(data))
+    arr=[]
+    for i in data:
+        if '-' in i:
+            if "(in water)" in i:
+                i = i.replace("(in water)", "")
+            temp = i.split('-')
 
+            grade = (float(temp[1]) + float(temp[0])) / 2
+            if grade>40.0:
+                grade=40
+            arr.append(grade)
+        elif "Not Applicable" in i or "Varies" in i:
+            arr.append(0.0)
+        else:
+
+            if (float(i) > 40):
+                arr.append(40.0)
+            else:
+                arr.append(float(i))
+    return arr
 
 def parse_data(data, log=False):
     min_num=99999
@@ -29,14 +50,11 @@ def parse_data(data, log=False):
         if '-' in i:
 
             if "(in water)" in i:
-                print("SS")
                 i=i.replace("(in water)", "")
-                print(i)
             temp = i.split('-')
-            if(float(temp[1])>70) and log:
+            grade = (float(temp[1]) + float(temp[0])) / 2
+            if(grade>70) and log:
                 grade=70.0
-            else:
-                grade=(float(temp[1])+float(temp[0]))/2
             arr.append(grade)
         elif 'Up to' in i:
             temp=i.split('to')
@@ -75,12 +93,14 @@ def diet_data(data):# Need more optimization
 
 
 arr =  parse_data(height_data, True)
-arr2 = parse_data(weight_data)
-arr3 = parse_data(top_speed)
+arr2 = parse_data(weight_data, True)
+arr3 = parse_speed(top_speed)
 data_height = np.array(arr)
 data_weight = np.array(arr2)
 data_diet=diet_data(diet)
 data_speed=np.array(arr3)
+
+
 def custom_tanh_scaling(x):
     return np.tanh((x - 60) / 10)
 
@@ -96,13 +116,27 @@ def z_score_scale_to_range(arr):
     return 2 * (z_scaled - np.min(z_scaled)) / (np.max(z_scaled) - np.min(z_scaled)) - 1
 
 
+def min_max_scale(arr):
+    arr = np.array(arr, dtype=np.float64)  # Osiguravamo da je niz float
+    min_val, max_val = np.min(arr), np.max(arr)
+
+    if min_val == max_val:  # Sprečava deljenje nulom
+        return np.zeros_like(arr)
+
+    scaled = 2 * (arr - min_val) / (max_val - min_val) - 1
+    return scaled
+
 scaled_data_height = custom_tanh_scaling(data_height)
 scaled_data_weight = custom_tanh_scaling(data_weight)
-scaled_data_speed = z_score_scale_to_range(data_speed)
-
-if len(data_diet)==len(scaled_data_weight) and len(data_diet)==len(weight_data) and len(data_diet)==len(scaled_data_speed):
-    for i in range(len(scaled_data_height)):
-        print(y[i],'   ',scaled_data_speed[i],"  ",features[i, 7])
+scaled_data_speed = min_max_scale(data_speed)
 
 
 
+data.iloc[:, 0] = scaled_data_height
+data.iloc[:, 1] = scaled_data_weight
+data.iloc[:, 12] = scaled_data_speed
+
+data.to_csv("scaled_dataset.csv", index=False)
+
+
+# If you want to use new created dataset, you need to drop column color, habitants and predators
