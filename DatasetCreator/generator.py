@@ -139,4 +139,4 @@ data.iloc[:, 12] = scaled_data_speed
 data.to_csv("scaled_dataset.csv", index=False)
 
 
-# If you want to use new created dataset, you need to drop column color, habitants and predators
+# If you want to use new created dataset, you need to drop column color, habitants and predator
