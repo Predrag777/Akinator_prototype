@@ -15,9 +15,11 @@ height_data=features[:,0]
 weight_data=features[:,1]
 diet=  features[:,4]
 predators=features[:, 6]
+colors=features[:, 2]
+top_speed=features[:, 7]
 
-for i in range(len(predators)):
-    print(y[i],'  ',predators[i])
+
+
 def parse_data(data, log=False):
     min_num=99999
     max_num=-99999
@@ -25,7 +27,12 @@ def parse_data(data, log=False):
     for i in data:
         i=i.replace(',','.')
         if '-' in i:
-            temp=i.split('-')
+
+            if "(in water)" in i:
+                print("SS")
+                i=i.replace("(in water)", "")
+                print(i)
+            temp = i.split('-')
             if(float(temp[1])>70) and log:
                 grade=70.0
             else:
@@ -67,13 +74,13 @@ def diet_data(data):# Need more optimization
     return arr
 
 
-arr=parse_data(height_data, True)
-arr2=parse_data(weight_data)
-
+arr =  parse_data(height_data, True)
+arr2 = parse_data(weight_data)
+arr3 = parse_data(top_speed)
 data_height = np.array(arr)
 data_weight = np.array(arr2)
 data_diet=diet_data(diet)
-
+data_speed=np.array(arr3)
 def custom_tanh_scaling(x):
     return np.tanh((x - 60) / 10)
 
@@ -91,10 +98,11 @@ def z_score_scale_to_range(arr):
 
 scaled_data_height = custom_tanh_scaling(data_height)
 scaled_data_weight = custom_tanh_scaling(data_weight)
-'''
-if len(data_diet)==len(scaled_data_weight) and len(data_diet)==len(weight_data):
+scaled_data_speed = z_score_scale_to_range(data_speed)
+
+if len(data_diet)==len(scaled_data_weight) and len(data_diet)==len(weight_data) and len(data_diet)==len(scaled_data_speed):
     for i in range(len(scaled_data_height)):
-        print(y[i],'   ',scaled_data_weight[i],'  ', weight_data[i],'  ',data_diet[i])'''
+        print(y[i],'   ',scaled_data_speed[i],"  ",features[i, 7])
 
 
 
