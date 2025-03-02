@@ -45,7 +45,7 @@ lifespan=features[:, 4]
 top_speed=features[:, 13]
 conservation=features[:, 10]
 
-# This function need to become part of the parse_data function
+# This function will become part of the parse_data function
 def parse_speed(data):
     arr=[]
     for i in data:
@@ -156,7 +156,7 @@ def normalize_height(data):
     mean = np.mean(data)
     std_dev = np.std(data)
     return (data - mean) / std_dev
-def diet_data(data):# Need more optimization
+def diet_data(data):# Requires more optimization
     arr=[]
     for i in data:
         if "Carnivore" in i:
@@ -201,10 +201,10 @@ def z_score_scale_to_range(arr):
     z_scaled = (arr - mean) / std
     return 2 * (z_scaled - np.min(z_scaled)) / (np.max(z_scaled) - np.min(z_scaled)) - 1
 def min_max_scale(arr):
-    arr = np.array(arr, dtype=np.float64)  # Osiguravamo da je niz float
+    arr = np.array(arr, dtype=np.float64) 
     min_val, max_val = np.min(arr), np.max(arr)
 
-    if min_val == max_val:  # Sprečava deljenje nulom
+    if min_val == max_val:  
         return np.zeros_like(arr)
 
     scaled = 2 * (arr - min_val) / (max_val - min_val) - 1
