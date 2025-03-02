@@ -1,16 +1,34 @@
 import pandas as pd
 import numpy as np
+import random
 
 # PARAMETERS
 # To remove extreme values, we introduced the parameters which would be used as constraints for what would be considered as large, heavy or fast.
 # For human:
 MAX_HEIGHT=100 # Every animal which height is above 100cm would be considered as big
 MAX_WEIGHT=70 # Every animal which weight is above 70kg would be considered as heavy
-MAX_LIFESPAN=30 # If lifespan is above 40 years it s long-lived
+MAX_LIFESPAN=30 # If lifespan is above 40 years it is long-lived
 MAX_SPEED=40 # If top speed is above 40km/h it is fast animal
+CONSERVATION_STATUS = { # Rating the conservation status
+                        "Least Concern": 10,
+                        "Near Threatened": 20,
+                        "Vulnerable": 50,
+                        "Endangered": 50,
+                        "Critically Endangered": 50,
+                        "Extinct": 10,
+                        "Extinct (around 58 million years ago)": 10,
+                        "Extinct (around 4,000 years ago)": 10,
+                        "Not Evaluated": 10,
+                        "Data Deficient": 10,
+                        "Not Applicable": 10,
+                        "Varies": 20
+}
+
+
+
 
 # Load data
-data = pd.read_csv("Animal Dataset.csv")
+data = pd.read_csv("new_animal_dataset.csv")
 questions = data.columns.tolist()[1:]  # Base for questions
 y = np.array(data.iloc[:, 0])  # Output
 
@@ -25,6 +43,7 @@ predators=features[:, 7]
 colors=features[:, 3]
 lifespan=features[:, 4]
 top_speed=features[:, 13]
+conservation=features[:, 10]
 
 # This function need to become part of the parse_data function
 def parse_speed(data):
@@ -48,7 +67,6 @@ def parse_speed(data):
             else:
                 arr.append(float(i))
     return arr
-
 def parse_data(data, type_feature):
     arr=[]
     years_months=1.0 # For animals which lifespan is several months
@@ -130,11 +148,14 @@ def parse_data(data, type_feature):
     return arr
 
 
+def parse_conservation_status(data):
+    return [random.randint(CONSERVATION_STATUS.get(status, 30) - 5, CONSERVATION_STATUS.get(status, 30)) for status in data]
+
+
 def normalize_height(data):
     mean = np.mean(data)
     std_dev = np.std(data)
     return (data - mean) / std_dev
-
 def diet_data(data):# Need more optimization
     arr=[]
     for i in data:
@@ -157,6 +178,7 @@ arr =  parse_data(height_data, "height")
 arr2 = parse_data(weight_data, "weight")
 arr3 = parse_speed(top_speed)
 arr4 = parse_data(lifespan, "lifespan")
+arr5 = parse_conservation_status(conservation)
 
 # Convert to numpy
 data_height = np.array(arr)
@@ -164,6 +186,7 @@ data_weight = np.array(arr2)
 data_diet=diet_data(diet)
 data_speed=np.array(arr3)
 data_lifespan = np.array(arr4)
+data_conservation = np.array(arr5)
 
 # SCALING METHODS
 def custom_tanh_scaling(x):
@@ -195,6 +218,7 @@ scaled_data_height = min_max_scale(data_height)
 scaled_data_weight = min_max_scale(data_weight)
 scaled_data_speed = min_max_scale(data_speed)
 scaled_data_lifespan = min_max_scale(data_lifespan)
+scaled_data_conservation = min_max_scale(data_conservation)
 
 
 # Replace old data with scaled data in certain columns:
@@ -202,6 +226,7 @@ data.iloc[:, 1] = scaled_data_height # Height
 data.iloc[:, 2] = scaled_data_weight # Weight
 data.iloc[:, 13] = scaled_data_speed # Top-speed
 data.iloc[:, 4] = scaled_data_lifespan # Lifespan
+data.iloc[:, 10] = scaled_data_conservation # Conservation status
 
 
 # Drop columns
