@@ -1,25 +1,32 @@
 import pandas as pd
 import numpy as np
 
+# PARAMETERS
+# To remove extreme values, we introduced the parameters which would be used as constraints for what would be considered as large, heavy or fast.
+# For human:
+MAX_HEIGHT=100 # Every animal which height is above 100cm would be considered as big
+MAX_WEIGHT=70 # Every animal which weight is above 70kg would be considered as heavy
+MAX_LIFESPAN=30 # If lifespan is above 30 years it s long-lived
+MAX_SPEED=40 # If top speed is above 40km/h it is fast animal
+
+
 data = pd.read_csv("Animal Dataset.csv")
 questions = data.columns.tolist()[1:]  # Base for questions
 y = np.array(data.iloc[:, 0])  # Output
-data = data.iloc[:, 1:]  # Only features
+
 
 features = np.array(data)  # Make numpy array
 
 
 
-
-height_data=features[:,0]
-weight_data=features[:,1]
-diet=  features[:,4]
-predators=features[:, 6]
-colors=features[:, 2]
-top_speed=features[:, 12]
+height_data=features[:,1]
+weight_data=features[:,2]
+diet=  features[:,5]
+predators=features[:, 7]
+colors=features[:, 3]
+top_speed=features[:, 13]
 
 def parse_speed(data):
-    print(len(data))
     arr=[]
     for i in data:
         if '-' in i:
@@ -28,38 +35,45 @@ def parse_speed(data):
             temp = i.split('-')
 
             grade = (float(temp[1]) + float(temp[0])) / 2
-            if grade>40.0:
-                grade=40
+            if grade>MAX_SPEED:
+                grade=MAX_SPEED
             arr.append(grade)
         elif "Not Applicable" in i or "Varies" in i:
             arr.append(0.0)
         else:
 
-            if (float(i) > 40):
-                arr.append(40.0)
+            if (float(i) > MAX_SPEED):
+                arr.append(MAX_SPEED)
             else:
                 arr.append(float(i))
     return arr
 
-def parse_data(data, log=False):
-    min_num=99999
-    max_num=-99999
+def parse_data(data, type_feature):
     arr=[]
     for i in data:
         i=i.replace(',','.')
         if '-' in i:
-
             if "(in water)" in i:
                 i=i.replace("(in water)", "")
             temp = i.split('-')
             grade = (float(temp[1]) + float(temp[0])) / 2
-            if(grade>70) and log:
-                grade=70.0
+            if(grade>70):
+                if "weight" in type_feature:
+                    grade=MAX_WEIGHT
+                elif "height" in type_feature:
+                    grade=MAX_HEIGHT
+                else:
+                    raise ValueError("You did not use apropriate type_feature parameter. Try with: weight, height, lifespan...")
             arr.append(grade)
         elif 'Up to' in i:
             temp=i.split('to')
-            if float(temp[1])>70 and log:
-                arr.append(70)
+            if float(temp[1])>70:
+                if "weight" in type_feature:
+                    arr.append(MAX_WEIGHT)
+                elif "height" in type_feature:
+                    arr.append(MAX_HEIGHT)
+                else:
+                    raise ValueError("You did not use apropriate type_feature parameter. Try with: weight, height, lifespan...")
             else:
                 arr.append(float(temp[1]))
 
@@ -92,15 +106,15 @@ def diet_data(data):# Need more optimization
     return arr
 
 
-arr =  parse_data(height_data, True)
-arr2 = parse_data(weight_data, True)
+arr =  parse_data(height_data, "height")
+arr2 = parse_data(weight_data, "weight")
 arr3 = parse_speed(top_speed)
 data_height = np.array(arr)
 data_weight = np.array(arr2)
 data_diet=diet_data(diet)
 data_speed=np.array(arr3)
 
-
+# SCALING METHODS
 def custom_tanh_scaling(x):
     return np.tanh((x - 60) / 10)
 
@@ -126,17 +140,18 @@ def min_max_scale(arr):
     scaled = 2 * (arr - min_val) / (max_val - min_val) - 1
     return scaled
 
-scaled_data_height = custom_tanh_scaling(data_height)
-scaled_data_weight = custom_tanh_scaling(data_weight)
+scaled_data_height = min_max_scale(data_height)
+scaled_data_weight = min_max_scale(data_weight)
 scaled_data_speed = min_max_scale(data_speed)
 
 
 
-data.iloc[:, 0] = scaled_data_height
-data.iloc[:, 1] = scaled_data_weight
-data.iloc[:, 12] = scaled_data_speed
+data.iloc[:, 1] = scaled_data_height
+data.iloc[:, 2] = scaled_data_weight
+data.iloc[:, 13] = scaled_data_speed
+
 
 data.to_csv("scaled_dataset.csv", index=False)
 
 
-# If you want to use new created dataset, you need to drop column color, habitants and predator
+# If you want to use new created dataset, you need to drop column color, habitants and predators
