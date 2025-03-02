@@ -5,10 +5,13 @@ from sklearn.preprocessing import MultiLabelBinarizer
 # PARAMETERS
 basic_colors = {"black", "brown", "orange", "white", "gray", "yellow",
                 "tan", "gold", "green", "silver", "pink", "red", "blue"}
+basic_habitats = {
+    "Savanna", "Grassland", "Forest", "Rainforest", "Desert", "Mountain", "Tundra",
+    "Ocean", "Freshwater", "Wetlands", "Coastal", "Underground", "Scrubland", "Island"
+}
 
-
-# Assigned probability for the colors
-def assign_color_probabilities(color_string):
+# Function to assign probabilities for colors
+def color_prob(color_string):
     if not isinstance(color_string, str) or color_string.strip() == "":
         return {}
 
@@ -18,7 +21,7 @@ def assign_color_probabilities(color_string):
     filtered_colors = [c for c in colors if c in basic_colors]
 
     if not filtered_colors:
-        return {} 
+        return {}
 
     # Normalizing
     num_colors = len(filtered_colors)
@@ -26,27 +29,64 @@ def assign_color_probabilities(color_string):
 
     return color_distribution
 
+# Function to map habitats to standardized categories
+def habitats_assigned(habitat_string):
+    if not isinstance(habitat_string, str) or habitat_string.strip() == "":
+        return set()
+
+    habitats = {h.strip().lower() for h in habitat_string.replace(" and ", ", ").split(",")}
+
+    mapped_habitats = set()
+    for h in habitats:
+        if "savanna" in h or "plains" in h:
+            mapped_habitats.add("Savanna")
+        elif "grassland" in h or "prairie" in h:
+            mapped_habitats.add("Grassland")
+        elif "forest" in h or "woodland" in h or "broadleaf" in h:
+            mapped_habitats.add("Forest")
+        elif "rainforest" in h or "tropical" in h:
+            mapped_habitats.add("Rainforest")
+        elif "desert" in h or "arid" in h or "scrubland" in h:
+            mapped_habitats.add("Desert")
+        elif "mountain" in h or "alpine" in h:
+            mapped_habitats.add("Mountain")
+        elif "tundra" in h:
+            mapped_habitats.add("Tundra")
+        elif "ocean" in h or "marine" in h or "sea" in h:
+            mapped_habitats.add("Ocean")
+        elif "freshwater" in h or "river" in h or "lake" in h:
+            mapped_habitats.add("Freshwater")
+        elif "wetland" in h or "marsh" in h or "swamp" in h:
+            mapped_habitats.add("Wetlands")
+        elif "coast" in h or "coral reef" in h:
+            mapped_habitats.add("Coastal")
+        elif "underground" in h or "cave" in h or "burrow" in h:
+            mapped_habitats.add("Underground")
+        elif "island" in h or "madagascar" in h or "galápagos" in h:
+            mapped_habitats.add("Island")
+
+    return mapped_habitats
 
 # Data load
 data = pd.read_csv("Animal Dataset.csv")
 
-y = np.array(data.iloc[:, 0])  # Animals names
+y = np.array(data.iloc[:, 0])  # Animal names
 features = np.array(data.iloc[:, 1:])  # Features
 
-# Colones for building new ones
+# Columns for building new ones
 predators = data.iloc[:, 7]  # Predators
 habitats = data.iloc[:, 6]  # Habitat
 colors = data.iloc[:, 3]  # Color
 
 # Make a list for better handling
 predator_lists = [p.split(", ") if isinstance(p, str) else [] for p in predators]
-habitats_list = [p.split(", ") if isinstance(p, str) else [] for p in habitats]
+habitats_list = [habitats_assigned(h) for h in habitats]
 
-# Find probability of appearing color for certain animal based on the description for color
-color_vectors = [assign_color_probabilities(p) for p in colors]
+# Find probability of appearing color for certain animals
+color_vectors = [color_prob(p) for p in colors]
 
 # Dataframe for colors
-color_columns = sorted(basic_colors)  
+color_columns = sorted(basic_colors)
 color_data = pd.DataFrame([{col: cv.get(col, 0) for col in color_columns} for cv in color_vectors])
 
 
