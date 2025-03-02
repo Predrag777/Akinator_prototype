@@ -45,7 +45,7 @@ lifespan=features[:, 4]
 top_speed=features[:, 13]
 conservation=features[:, 10]
 
-# This function will become part of the parse_data function
+# This function need to become part of the parse_data function
 def parse_speed(data):
     arr=[]
     for i in data:
@@ -156,7 +156,7 @@ def normalize_height(data):
     mean = np.mean(data)
     std_dev = np.std(data)
     return (data - mean) / std_dev
-def diet_data(data):# Requires more optimization
+def diet_data(data):# Need more optimization
     arr=[]
     for i in data:
         if "Carnivore" in i:
@@ -201,10 +201,10 @@ def z_score_scale_to_range(arr):
     z_scaled = (arr - mean) / std
     return 2 * (z_scaled - np.min(z_scaled)) / (np.max(z_scaled) - np.min(z_scaled)) - 1
 def min_max_scale(arr):
-    arr = np.array(arr, dtype=np.float64) 
+    arr = np.array(arr, dtype=np.float64)  # Osiguravamo da je niz float
     min_val, max_val = np.min(arr), np.max(arr)
 
-    if min_val == max_val:  
+    if min_val == max_val:  # Sprečava deljenje nulom
         return np.zeros_like(arr)
 
     scaled = 2 * (arr - min_val) / (max_val - min_val) - 1
@@ -220,7 +220,8 @@ scaled_data_speed = min_max_scale(data_speed)
 scaled_data_lifespan = min_max_scale(data_lifespan)
 scaled_data_conservation = min_max_scale(data_conservation)
 
-
+'''for i in range(len(y)):
+    print(y[i],'   ', data_conservation[i],'   ',conservation[i],'   ',scaled_data_conservation[i])'''
 # Replace old data with scaled data in certain columns:
 data.iloc[:, 1] = scaled_data_height # Height
 data.iloc[:, 2] = scaled_data_weight # Weight
@@ -235,6 +236,11 @@ data = data.drop(data.columns[4], axis=1) # Habitats
 data = data.drop(data.columns[4], axis=1) # Predators
 data = data.drop(data.columns[4], axis=1) # Predators
 data = data.drop(data.columns[4], axis=1) # Top speed
+data = data.drop(data.columns[4], axis=1) # Countries found
+data = data.drop(data.columns[4], axis=1) # Top speed
+data = data.drop(data.columns[5], axis=1) # Top speed
+data = data.drop(data.columns[6], axis=1) # Social Structure
+data = data.drop(data.columns[6], axis=1) # Offspring per Birth
 
 
-data.to_csv("scaled_dataset.csv", index=False) # Create new dataset which would be used
+data.to_csv("Dataset.csv", index=False) # Create new dataset which would be used
