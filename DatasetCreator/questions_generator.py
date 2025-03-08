@@ -36,5 +36,6 @@ def questions_builder(questions):
     return arr
 
 questions=questions_builder(questions)
-for i in questions:
-    print(i)
+with open("questions.txt", "w", encoding="utf-8") as file:
+    for question in questions:
+        file.write(str(question) + "\n")

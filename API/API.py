@@ -76,15 +76,34 @@ def entropy(answers):
     return -sum(p * math.log2(p) for p in prob if p > 0)  # Shannon entropy
 
 
+def information_gain(animals, question):
+    answers = [animal.arr[question.id - 1] for animal in animals]
+    initial_entropy = entropy(answers)
+
+    grouped_data = {}
+    for animal in animals:
+        ans = animal.arr[question.id - 1]
+        if ans not in grouped_data:
+            grouped_data[ans] = []
+        grouped_data[ans].append(animal)
+
+    weighted_entropy = sum(
+        (len(group) / len(animals)) * entropy([a.arr[question.id - 1] for a in group])
+        for group in grouped_data.values()
+    )
+
+    return initial_entropy - weighted_entropy
+
+
 def find_the_best_question(questions_left):
     best_question = None
-    best_entropy = -1
+    best_score = float('-inf')  # find the question with the biggest info score
 
     for question in questions_left:
-        answers = [item.arr[question.id - 1] for item in items]
-        e = entropy(answers)
-        if e > best_entropy:
-            best_entropy = e
+        gain = information_gain(animals, question)  
+
+        if gain > best_score:
+            best_score = gain
             best_question = question
 
     return best_question
