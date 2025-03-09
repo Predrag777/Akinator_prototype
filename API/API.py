@@ -1,18 +1,14 @@
 import numpy as np
 import pandas as pd
-import ast
 import math
 from collections import Counter
 
-QUESTION_LEN = 26  # Number of questions
-
 
 ############## CLASSES
-class Item:
-    def __init__(self, name, item_type, arr):
+class Animal:
+    def __init__(self, name, arr):
         self.name = name
         self.arr = arr  # Numerical representation of an item
-        self.item_type = item_type  # Item category
         self.confidence = 1e-5  # Small initial confidence to avoid division by zero
 
 
@@ -21,17 +17,25 @@ class Question:
         self.id = id
         self.text = text.strip()
 
+class Node:
+    def __init__(self, question=None, character=None):
+        self.question = question
+        self.character = character
+        self.left = None
+        self.right = None
+
 
 ######################################################
 # Functions for data loading
-
-def load_items(path):
-    items = []
-    with open(path) as file:
-        for line in file:
-            l = line.strip().split(":")
-            items.append(Item(l[0], l[1], ast.literal_eval(l[2])))
-    return items
+def load_animals(path):
+    arr = []
+    data = pd.read_csv(path)
+    animal_names = np.array(data.iloc[:, 0])
+    data = data.drop(data.columns[16], axis=1)  # Remove color column
+    animal_features = np.array(data.iloc[:, 1:])
+    for i in range(len(animal_names)):
+        arr.append(Animal(animal_names[i], animal_features[i]))
+    return arr
 
 
 def load_questions(path):
@@ -42,12 +46,11 @@ def load_questions(path):
     return questions
 
 
-# Load data
-items = load_items("Data/items_dataset.txt")
-questions = load_questions("Data/questions_dataset.txt")
+animals = load_animals("Data/DatasetLLM.csv")
+questions = load_questions("Data/questions_dataset3.txt")
+QUESTION_LEN = len(questions)
 
-
-def retrive_question(question):
+def answer_question(question):
     while True:
         try:
             val = float(input(question.text + " (1: Yes, -1: No, 0.2: Maybe, -0.2: Maybe no, 0: Dont know) "))
@@ -56,14 +59,9 @@ def retrive_question(question):
         except ValueError:
             pass
 
-def retrive_question2(question):
-    val = float(input(question.text + " (1: Yes, -1: No, 0.2: Maybe, -0.2: Maybe no, 0: Dont know) "))
-    if val in [1, -1, 0.2, -0.2, 0]:
-        return val
-
 def evaluate(answer, question):
     print(answer,"    ",question)
-    for item in items:
+    for item in animals:
         if question.id - 1 >= len(item.arr):  # Out of bounds check
             continue
         similarity = (1 - abs(answer - item.arr[question.id - 1])) / QUESTION_LEN
@@ -95,50 +93,45 @@ def information_gain(animals, question):
     return initial_entropy - weighted_entropy
 
 
-def find_the_best_question(questions_left):
-    best_question = None
-    best_score = float('-inf')  # find the question with the biggest info score
+def build_decision_tree(animals, questions):
+    if len(set(a.name for a in animals)) == 1:
+        return Node(character=animals[0].name)
 
-    for question in questions_left:
-        gain = information_gain(animals, question)  
+    best_question = max(questions, key=lambda q: information_gain(animals, q), default=None)
 
-        if gain > best_score:
-            best_score = gain
-            best_question = question
 
-    return best_question
+    left = [a for a in animals if a.arr[best_question.id - 1] <= 0]
+    right = [a for a in animals if a.arr[best_question.id - 1] > 0]
 
+    if not left or not right:
+        most_common = Counter([a.name for a in animals]).most_common(1)
+        return Node(character=most_common[0][0]) if most_common else None
+
+    new_node = Node(question=best_question)
+    other_questions = [q for q in questions if q != best_question]
+
+    new_node.left = build_decision_tree(left, other_questions)
+    new_node.right = build_decision_tree(right, other_questions)
+
+    return new_node
+
+
+
+def answer_question(node):
+    if node.character:
+        return node.character
+    answer = float(input(node.question.text + " (1: Yes, -1: No, 0: Maybe, -0.2: Maybe yes, 0.2: Maybe no) "))
+    if answer >= 0:
+        return answer_question(node.right)
+    else:
+        return answer_question(node.left)
 
 def gameplay():
-    questions_left = questions.copy()
+    root = build_decision_tree(animals, questions)
+    result = answer_question(root)
+    print(f"My answer is {result}")
 
-    while questions_left:
-        curr_question = find_the_best_question(questions_left)
-        if not curr_question:
-            print("There is no more questions")
-            break
-
-        # Retrieve next question
-
-        answer = retrive_question(curr_question)
-
-        # Update confidence of each item
-        evaluate(answer, curr_question)
-
-        # Remove asked question
-        questions_left.remove(curr_question)
-
-
-        best_item = max(items, key=lambda x: x.confidence)
-        print("The biggest probability is", best_item.name , "(with confidence: ",best_item.confidence)
-
-        # If confidence is high enough, end the game
-        if best_item.confidence > 0.9:
-            print("Finished! API's answer is:",{best_item.name})
-            break
-
-
-#gameplay()
+gameplay()
 
 
 from typing import Union
