@@ -8,6 +8,8 @@ from collections import Counter
 THRESHOLD_YES = 0.7
 THRESHOLD_NO = -0.7
 
+
+# Classes
 class Animal:
     def __init__(self, name, arr):
         self.name = name
@@ -19,6 +21,16 @@ class Question:
         self.id = id
         self.text = text.strip()
 
+class Node:
+    def __init__(self, question=None, character=None):
+        self.left = None
+        self.middle_left = None
+        self.middle_right = None
+        self.right = None
+        self.character = character
+        self.question = question
+###################################################################################################################
+# Loading functions
 def load_animals(path):
     arr = []
     data = pd.read_csv(path)
@@ -40,7 +52,8 @@ animals = load_animals("Data/DatasetLLM.csv")
 questions = load_questions("Data/questions_dataset3.txt")
 QUESTION_LEN = len(questions)
 
-
+###################################################################################################################
+# Auxiliary functions
 def evaluate(answer, question):
     print(answer, "    ", question)
     for item in animals:
@@ -71,28 +84,31 @@ def information_gain(animals, question):
     )
     return initial_entropy - weighted_entropy
 
-class Node:
-    def __init__(self, question=None, character=None):
-        self.left = None
-        self.middle_left = None
-        self.middle_right = None
-        self.right = None
-        self.character = character
-        self.question = question
+###################################################################################################################
+
+# MAIN PART
+
 
 def build_tree(animals, questions):
     if not questions:
         most_common = Counter([a.name for a in animals]).most_common(1)
         return Node(character=most_common[0][0]) if most_common else None
 
-    max_question_val = 0
+    # If animals are same, return them all
+    if len(set(a.name for a in animals)) == 1:
+        return Node(character=animals[0].name)
+
+    if not questions:  # There is no more question: return the most appropriate animal
+        most_common = Counter([a.name for a in animals]).most_common(1)
+        if most_common:
+            return Node(character=most_common[0][0])
+        else:
+            return None
+
+
     best_question = None
 
-    for q in questions:
-        gain = information_gain(animals, q)
-        if gain > max_question_val:
-            max_question_val = gain
-            best_question = q
+    best_question = max(questions, key=lambda q: information_gain(animals, q), default=None)
 
     if not best_question: # If there is no best questions, we need to return the most suited animal. It would be the end of game
         most_common = Counter([a.name for a in animals]).most_common(1)
@@ -100,10 +116,10 @@ def build_tree(animals, questions):
 
     remaining_questions = [q for q in questions if q != best_question]  # Remove used questions
 
-    left_group = []  # For Yes (above THRESHOLD_YES)
-    middle_left_group = []  # For maybe yes (Just above 0)
+    left_group = []          # For Yes (above THRESHOLD_YES)
+    middle_left_group = []   # For maybe yes (Just above 0)
     middle_right_group = []  # For maybe no (Just lower than 0)
-    right_group = []  # For No (below THRESHOLD_NO)
+    right_group = []         # For No (below THRESHOLD_NO)
 
     for animal in animals:
         val = animal.arr[best_question.id - 1]
@@ -117,6 +133,7 @@ def build_tree(animals, questions):
             right_group.append(animal)
 
     if not (left_group or middle_left_group or middle_right_group or right_group):
+        print("SS")
         most_common = Counter([a.name for a in animals]).most_common(1)
         return Node(character=most_common[0][0]) if most_common else None
 
@@ -128,10 +145,10 @@ def build_tree(animals, questions):
 
     node = Node(question=best_question)
 
-    node.left = build_tree(left_group, remaining_questions) if left_group else None                         # Animals which have big confidence for answer to be YES
-    node.middle_left = build_tree(middle_left_group, remaining_questions) if middle_left_group else None    # Animals which have big confidence for answer to be MAYBE YES
-    node.middle_right = build_tree(middle_right_group, remaining_questions) if middle_right_group else None # Animals which have big confidence for answer to be MAYBE NO
-    node.right = build_tree(right_group, remaining_questions) if right_group else None                      # Animals which have big confidence for answer to be NO
+    node.left = build_tree(left_group, remaining_questions) if left_group else None
+    node.middle_left = build_tree(middle_left_group, remaining_questions) if middle_left_group else None
+    node.middle_right = build_tree(middle_right_group, remaining_questions) if middle_right_group else None
+    node.right = build_tree(right_group, remaining_questions) if right_group else None
 
     return node
 
