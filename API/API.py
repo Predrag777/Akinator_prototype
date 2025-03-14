@@ -62,12 +62,14 @@ def evaluate(answer, question):
         similarity = (1 - abs(answer - item.arr[question.id - 1])) / QUESTION_LEN
         item.confidence += similarity
 
+
 def entropy(answers):
     counter = Counter(answers)
     prob = [c / len(answers) for c in counter.values()]
     return -sum(p * math.log2(p) for p in prob if p > 0)  # Shannon entropy
 
-def information_gain(animals, question):
+
+def information_gain(animals, question): # Aux function for finding the most eliminating question
     answers = [animal.arr[question.id - 1] for animal in animals]
     initial_entropy = entropy(answers)
 
@@ -133,7 +135,6 @@ def build_tree(animals, questions):
             right_group.append(animal)
 
     if not (left_group or middle_left_group or middle_right_group or right_group):
-        print("SS")
         most_common = Counter([a.name for a in animals]).most_common(1)
         return Node(character=most_common[0][0]) if most_common else None
 
