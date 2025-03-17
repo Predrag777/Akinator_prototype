@@ -174,50 +174,57 @@ def gameplay():
     result = answer_question(root)
     print(f"My answer is {result}")
 
-gameplay() # Run gameplay
+# gameplay() # Run gameplay from console
 
-
-
-# Do not use API part, because algorithm is in testing phase!
-'''from typing import Union
-
-
+# API for the game
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 
+
+# Initialize Flask
 app = Flask(__name__)
 CORS(app)
 
-questions_left=questions.copy()
+questions_left = questions.copy()
+current_node = build_tree(animals, questions_left)
 
 
+def get_next_question(node):
+    if node.character:
+        return {"Item": node.character}
+    return {"Question": node.question.text, "Question_id": node.question.id}
 
-#gameplay()
 
+# API endpoints
 @app.route("/question", methods=["GET"])
 def send_question():
-    ss=find_the_best_question(questions_left)
-
-    return jsonify({"Question": f"{ss.text}", "Question_id":f"{ss.id}"})
-
-
+    global current_node
+    return jsonify(get_next_question(current_node))
 
 @app.route("/submit", methods=["POST"])
 def receive_data():
+    global current_node
     data = request.json
     answer = float(data.get("answer"))
-    question = data.get("question")
-    # Build object question
-    curr_question = next((q for q in questions_left if q.text == question), None)
+    question_text = data.get("question")
 
-    evaluate(float(answer),curr_question)
-    questions_left.remove(curr_question)
-    best_item = max(items, key=lambda x: x.confidence)
+    curr_question = next((q for q in questions_left if q.text == question_text), None)
+    if not curr_question:
+        return jsonify({"error": "Invalid question"}), 400
 
-    return jsonify({"message": "Primljeno", "Item": best_item.name, "confidence": best_item.confidence}), 200
+    if answer == 1 and current_node.left:
+        current_node = current_node.left
+    elif answer == 0.5 and current_node.middle_left:
+        current_node = current_node.middle_left
+    elif answer == -0.5 and current_node.middle_right:
+        current_node = current_node.middle_right
+    elif answer == -1 and current_node.right:
+        current_node = current_node.right
+    else:
+        current_node = current_node.middle_left or current_node.left or current_node.right
 
+    return jsonify(get_next_question(current_node))
 
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)'''
-
+    app.run(debug=True, port=5000)
