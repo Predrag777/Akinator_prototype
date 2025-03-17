@@ -70,7 +70,12 @@ function getMessage() {
     fetch("http://localhost:5000/question")
         .then(response => response.json())
         .then(data => {
-            document.getElementById("questions").innerHTML = data.Question;
+            if (data.Question!=undefined){
+                document.getElementById("questions").innerHTML = data.Question;
+            }else{
+                document.getElementById("questions").innerHTML="FINISHED"
+            }
+            
         })
         .catch(error => console.error("Error:", error));
 }
@@ -88,7 +93,7 @@ function sendDataToBackend(selectedValue, question) {
         var item=data.Item
         var confid=parseFloat(data.confidence).toFixed(2)
 
-        document.getElementById("AI_answer").innerHTML=`<p> Item: ${item}</p><p>Confidence: ${confid}</p>`
+        document.getElementById("AI_answer").innerHTML=`<p> Animal: ${item}</p>`
         setTimeout(() => {
             transform_wizard("Assets/wizard_thinking.gif");
             
