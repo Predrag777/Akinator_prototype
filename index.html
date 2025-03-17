@@ -92,8 +92,10 @@ function sendDataToBackend(selectedValue, question) {
     .then(data => {
         var item=data.Item
         var confid=parseFloat(data.confidence).toFixed(2)
-
-        document.getElementById("AI_answer").innerHTML=`<p> Animal: ${item}</p>`
+        if(item!=undefined)
+            document.getElementById("AI_answer").innerHTML=`<p> Your animal is ${item}</p>`
+        else
+            document.getElementById('AI_answer').innerHTML=`<p>Thinking...</p>`
         setTimeout(() => {
             transform_wizard("Assets/wizard_thinking.gif");
             
