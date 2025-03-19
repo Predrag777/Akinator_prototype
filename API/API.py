@@ -48,7 +48,7 @@ def load_questions(path):
             questions.append(Question(id, line))
     return questions
 
-animals = load_animals("Data/DatasetLLM.csv")
+animals = load_animals("Data/DatasetLLM2.csv")
 questions = load_questions("Data/questions_dataset3.txt")
 QUESTION_LEN = len(questions)
 
